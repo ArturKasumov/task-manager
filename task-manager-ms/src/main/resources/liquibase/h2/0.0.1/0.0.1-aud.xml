@@ -1,0 +1,31 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.26.xsd"
+                   logicalFilePath="liquibase/0.0.1/0.0.1-aud.xml">
+
+    <changeSet id="0.0.1-aud-1" author="arturk">
+        <createTable tableName="REVINFO">
+            <column name="REV" type="BIGINT"/>
+            <column name="TIMESTAMP" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="0.0.1-aud-2" author="arturk">
+        <createSequence cacheSize="100" incrementBy="1" sequenceName="REVINFO_SEQ" startValue="1"/>
+    </changeSet>
+
+    <changeSet id="0.0.1-3" author="arturk">
+        <createTable tableName="TASK_AUD">
+            <column name="ID" type="BIGINT"/>
+            <column name="TITLE" type="VARCHAR2(50)"/>
+            <column name="DESCRIPTION" type="VARCHAR2(200)"/>
+            <column name="STATUS" type="VARCHAR2(20)"/>
+            <column name="PRIORITY" type="INTEGER"/>
+            <column name="CREATED_AT" type="TIMESTAMP" defaultValueComputed="NOW()"/>
+            <column name="UPDATED_AT" type="TIMESTAMP"/>
+            <column name="REV" type="BIGINT"/>
+            <column name="REVTYPE" type="INTEGER"/>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>

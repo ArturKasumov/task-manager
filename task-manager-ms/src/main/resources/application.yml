@@ -1,0 +1,37 @@
+server:
+  port: 2301
+
+spring:
+  application:
+    name: task-manager-microservice
+  datasource:
+    primary:
+      driverClassName: org.h2.Driver
+      jdbcUrl: jdbc:h2:file:./task-manager-db
+      username: sa
+      password: pwd
+      liquibase:
+        changeLog: classpath:liquibase/h2/master.xml
+    backup:
+      jdbcUrl: jdbc:postgresql://localhost:5432/tasks
+      driverClassName: org.postgresql.Driver
+      username: arturk
+      password: arturk2308
+      liquibase:
+        changeLog: classpath:liquibase/postgres/master.xml
+  liquibase:
+    enabled: false
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  jpa:
+    hibernate:
+      ddl-auto: none
+logging:
+  config: classpath:logback.xml
+kafka:
+  bootstrap-server:
+    url: localhost:29092
+  topic:
+    name: dev_tasks

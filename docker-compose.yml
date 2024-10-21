@@ -1,0 +1,99 @@
+version: '3'
+services:
+
+  postgres:
+    container_name: postgres-container
+    image: postgres:latest
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: arturk2308
+      POSTGRES_USER: arturk
+      POSTGRES_DB: tasks
+    volumes:
+      - tasks_db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - task-manager
+
+  pgadmin:
+    container_name: pgadmin-container
+    image: dpage/pgadmin4:latest
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    environment:
+      PGADMIN_DEFAULT_EMAIL: pgadmin@example.com
+      PGADMIN_DEFAULT_PASSWORD: 1234
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "8888:80"
+    networks:
+      - task-manager
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: zookeeper-container
+    restart: unless-stopped
+    networks:
+      - task-manager
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka-container
+    restart: unless-stopped
+    depends_on:
+      - zookeeper
+    networks:
+      - task-manager
+    ports:
+      - "29092:29092"
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  init-kafka:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - kafka
+    entrypoint: [ '/bin/sh', '-c' ]
+    networks:
+      - task-manager
+    command: |
+      "
+      # blocks until kafka is reachable
+      kafka-topics --bootstrap-server kafka:9092 --list
+
+      echo -e 'Creating kafka topics'
+      kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic dev_tasks --replication-factor 1 --partitions 3
+
+      echo -e 'Successfully created the following topics:'
+      kafka-topics --bootstrap-server kafka:9092 --list
+      "
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui-container
+    restart: unless-stopped
+    depends_on:
+      - kafka
+    networks:
+      - task-manager
+    ports:
+      - "9081:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: "kafka:9092"
+
+volumes:
+  tasks_db_data:
+
+networks:
+  task-manager:
+    driver: bridge
